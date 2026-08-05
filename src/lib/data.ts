@@ -37,6 +37,22 @@ export async function getAppData(limit = 28): Promise<{
 }
 
 export async function getRecord(date: string) {
-  const app = await getAppData(60);
-  return { ...app, record: app.records.find((item) => item.record_date === date) ?? null };
+  if (!isSupabaseConfigured()) {
+    return { demo: true, record: demoRecords.find((item) => item.record_date === date) ?? null };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const allowed = process.env.ALLOWED_USER_EMAIL?.toLowerCase();
+  if (allowed && user.email?.toLowerCase() !== allowed) redirect("/login?error=not_allowed");
+
+  const { data, error } = await supabase
+    .from("daily_records")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("record_date", date)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return { demo: false, record: data as DailyRecord | null };
 }

@@ -14,11 +14,17 @@
 ## 本地启动
 
 1. 复制 `.env.example` 为 `.env.local`，填入 Supabase 项目 URL、anon key 和唯一允许登录的邮箱。
-2. 在 Supabase SQL Editor 执行 `supabase/migrations/0001_initial.sql`。
+2. 按文件名顺序在 Supabase SQL Editor 执行 `supabase/migrations/` 中的 SQL 文件。
 3. 在 Supabase Auth 中启用 Email，并把 `http://localhost:3000/auth/confirm` 加入 Redirect URLs。
 4. 运行 `npm run dev`。
 
 没有配置 Supabase 时，应用自动进入只读演示模式，便于先检查完整产品体验。
+
+## 睡眠数据
+
+- 手动模式只输入入睡和最终起床时间，睡眠时长由前后端按跨午夜规则自动计算。
+- `daily_records` 保存每日聚合结果及数据来源。
+- `health_sleep_samples` 为未来的 iPhone companion app 保留 HealthKit 分阶段原始样本；网页本身不能直接读取 Apple Health。
 
 ## 验证
 

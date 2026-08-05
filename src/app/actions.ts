@@ -5,6 +5,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { calculateSleepDurationMinutes } from "@/lib/sleep";
+import { isRecordDate } from "@/lib/record-date";
 
 const nullableString = (form: FormData, key: string) => {
   const value = form.get(key)?.toString().trim();
@@ -48,15 +50,18 @@ export async function saveMorning(formData: FormData) {
   const auth = await authenticatedClient();
   if (!auth) redirect("/?demo=1");
   const recordDate = nullableString(formData, "record_date");
-  if (!recordDate) throw new Error("缺少记录日期");
+  if (!isRecordDate(recordDate)) throw new Error("记录日期无效");
+  const sleepStartTime = nullableString(formData, "sleep_start_time");
+  const wakeTime = nullableString(formData, "wake_time");
   const payload = {
     user_id: auth.user.id,
     record_date: recordDate,
     morning_completed_at: new Date().toISOString(),
     weight: nullableNumber(formData, "weight"),
-    sleep_start_time: nullableString(formData, "sleep_start_time"),
-    sleep_duration_minutes: nullableNumber(formData, "sleep_duration_minutes"),
-    wake_time: nullableString(formData, "wake_time"),
+    sleep_start_time: sleepStartTime,
+    sleep_duration_minutes: calculateSleepDurationMinutes(sleepStartTime, wakeTime),
+    wake_time: wakeTime,
+    sleep_source: sleepStartTime && wakeTime ? "manual" : null,
     sleep_quality: nullableString(formData, "sleep_quality"),
     morning_clarity: nullableString(formData, "morning_clarity"),
     task_intensity: nullableString(formData, "task_intensity"),
@@ -71,7 +76,7 @@ export async function saveEvening(formData: FormData) {
   const auth = await authenticatedClient();
   if (!auth) redirect("/?demo=1");
   const recordDate = nullableString(formData, "record_date");
-  if (!recordDate) throw new Error("缺少记录日期");
+  if (!isRecordDate(recordDate)) throw new Error("记录日期无效");
   const violated = nullableBoolean(formData, "boundary_violated");
   const reason = nullableString(formData, "boundary_violation_reason");
   if (violated && !reason) throw new Error("违反边界时需要选择主要原因");

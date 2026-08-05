@@ -5,6 +5,7 @@ export type ThreeLevel = "insufficient" | "roughly_enough" | "sufficient";
 export type FatSugarLevel = "none" | "small" | "significant";
 export type CarbAmount = "low" | "moderate" | "high";
 export type OverallIntake = "low" | "moderate" | "high" | "excessive";
+export type SleepSource = "manual" | "apple_health";
 
 export type DailyRecord = {
   id?: string;
@@ -16,6 +17,9 @@ export type DailyRecord = {
   sleep_start_time: string | null;
   sleep_duration_minutes: number | null;
   wake_time: string | null;
+  sleep_source: SleepSource | null;
+  sleep_start_at: string | null;
+  sleep_end_at: string | null;
   sleep_quality: SleepQuality | null;
   morning_clarity: MorningClarity | null;
   task_intensity: TaskIntensity | null;
@@ -53,6 +57,9 @@ export const emptyRecord = (date: string): DailyRecord => ({
   sleep_start_time: null,
   sleep_duration_minutes: null,
   wake_time: null,
+  sleep_source: null,
+  sleep_start_at: null,
+  sleep_end_at: null,
   sleep_quality: null,
   morning_clarity: null,
   task_intensity: null,

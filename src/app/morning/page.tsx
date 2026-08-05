@@ -4,29 +4,29 @@ import { AppShell } from "@/components/app-shell";
 import { Choice, ChoiceField } from "@/components/choice-field";
 import { PageHeader } from "@/components/page-header";
 import { DatePicker } from "@/components/date-picker";
+import { SleepFields } from "@/components/sleep-fields";
 import { saveMorning } from "@/app/actions";
 import { clarityOptions, sleepQualityOptions, taskIntensityOptions } from "@/lib/constants";
 import { getRecord } from "@/lib/data";
+import { recordDateOr } from "@/lib/record-date";
 
 export const dynamic = "force-dynamic";
 
 export default async function MorningPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   const params = await searchParams;
-  const date = params.date ?? format(new Date(), "yyyy-MM-dd");
+  const date = recordDateOr(params.date, format(new Date(), "yyyy-MM-dd"));
   const { demo, record } = await getRecord(date);
   return (
     <AppShell demo={demo}>
       <PageHeader eyebrow="MORNING CHECK-IN" title="晨间状态" description="记录昨夜恢复与当前感受，然后由你决定今天能承受多少认知工作。" actions={<DatePicker value={date} />} />
-      <form action={saveMorning} className="form-shell">
+      <form key={date} action={saveMorning} className="form-shell">
         <input type="hidden" name="record_date" value={date} />
         {demo && <div className="notice">演示模式下提交不会写入数据库；配置 Supabase 后即可保存。</div>}
         <section className="surface form-section">
-          <div className="form-section-title"><span>01</span><div><h2>客观数据</h2><p>从 Apple Health 快速转录；拿不到就留空</p></div></div>
+          <div className="form-section-title"><span>01</span><div><h2>客观数据</h2><p>手动时间会自动计算；未来由 Apple Health 提供精确睡眠样本</p></div></div>
           <div className="input-grid">
             <div className="input-field"><label htmlFor="weight">体重 <em className="optional">可选</em></label><input className="input" id="weight" name="weight" type="number" inputMode="decimal" step="0.1" min="20" max="300" defaultValue={record?.weight ?? ""} placeholder="例如 71.8" /><small>kg</small></div>
-            <div className="input-field"><label htmlFor="sleep_start_time">大概入睡时间</label><input className="input" id="sleep_start_time" name="sleep_start_time" type="time" defaultValue={record?.sleep_start_time?.slice(0, 5) ?? ""} /></div>
-            <div className="input-field"><label htmlFor="wake_time">大概起床时间</label><input className="input" id="wake_time" name="wake_time" type="time" defaultValue={record?.wake_time?.slice(0, 5) ?? ""} /></div>
-            <div className="input-field"><label htmlFor="sleep_duration_minutes">睡眠时长</label><input className="input" id="sleep_duration_minutes" name="sleep_duration_minutes" type="number" inputMode="numeric" min="0" max="1000" defaultValue={record?.sleep_duration_minutes ?? ""} placeholder="例如 430" /><small>分钟（7 小时 10 分 = 430）</small></div>
+            <SleepFields record={record} />
           </div>
         </section>
         <section className="surface form-section">
