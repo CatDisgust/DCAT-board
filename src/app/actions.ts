@@ -53,22 +53,59 @@ export async function saveMorning(formData: FormData) {
   if (!isRecordDate(recordDate)) throw new Error("记录日期无效");
   const sleepStartTime = nullableString(formData, "sleep_start_time");
   const wakeTime = nullableString(formData, "wake_time");
+  const sleepEntryMode = nullableString(formData, "sleep_entry_mode") === "manual" ? "manual" : "health";
+  const weightEntryMode = nullableString(formData, "weight_entry_mode") === "manual" ? "manual" : "health";
+  const sleepDuration = calculateSleepDurationMinutes(sleepStartTime, wakeTime);
+  const weight = nullableNumber(formData, "weight");
+  if (weightEntryMode === "manual" && weight === null) {
+    throw new Error("手动修正体重时，需要填写有效数值");
+  }
+  if (sleepEntryMode === "manual" && (!sleepStartTime || !wakeTime || sleepDuration === null)) {
+    throw new Error("手动修正睡眠时，需要填写有效且不同的入睡和起床时间");
+  }
   const payload = {
     user_id: auth.user.id,
     record_date: recordDate,
     morning_completed_at: new Date().toISOString(),
-    weight: nullableNumber(formData, "weight"),
-    sleep_start_time: sleepStartTime,
-    sleep_duration_minutes: calculateSleepDurationMinutes(sleepStartTime, wakeTime),
-    wake_time: wakeTime,
-    sleep_source: sleepStartTime && wakeTime ? "manual" : null,
+    ...(weightEntryMode === "manual" ? {
+      weight,
+      weight_source: "manual",
+    } : {}),
+    ...(sleepEntryMode === "manual" ? {
+      sleep_start_time: sleepStartTime,
+      sleep_duration_minutes: sleepDuration,
+      wake_time: wakeTime,
+      sleep_source: "manual",
+      sleep_start_at: null,
+      sleep_end_at: null,
+    } : {}),
     sleep_quality: nullableString(formData, "sleep_quality"),
     morning_clarity: nullableString(formData, "morning_clarity"),
     task_intensity: nullableString(formData, "task_intensity"),
   };
   const { error } = await auth.supabase.from("daily_records").upsert(payload, { onConflict: "user_id,record_date" });
   if (error) throw new Error(error.message);
+  if (sleepEntryMode === "health" || weightEntryMode === "health") {
+    const releasedSources = {
+      ...(sleepEntryMode === "health" ? { sleep_source: null } : {}),
+      ...(weightEntryMode === "health" ? { weight_source: null } : {}),
+    };
+    const { error: releaseError } = await auth.supabase
+      .from("daily_records")
+      .update(releasedSources)
+      .eq("user_id", auth.user.id)
+      .eq("record_date", recordDate);
+    if (releaseError) throw new Error(releaseError.message);
+
+    const { error: refreshError } = await auth.supabase.rpc("refresh_health_daily_records", {
+      p_user_id: auth.user.id,
+      p_dates: [recordDate],
+    });
+    if (refreshError) throw new Error(refreshError.message);
+  }
   revalidatePath("/"); revalidatePath("/analysis"); revalidatePath("/history");
+  revalidatePath("/morning");
+  revalidatePath(`/history/${recordDate}`);
   redirect("/?saved=morning");
 }
 
@@ -79,12 +116,20 @@ export async function saveEvening(formData: FormData) {
   if (!isRecordDate(recordDate)) throw new Error("记录日期无效");
   const violated = nullableBoolean(formData, "boundary_violated");
   const reason = nullableString(formData, "boundary_violation_reason");
+  const activeEnergyEntryMode = nullableString(formData, "active_energy_entry_mode") === "manual" ? "manual" : "health";
+  const activeEnergy = nullableNumber(formData, "active_energy_kcal");
+  if (activeEnergyEntryMode === "manual" && activeEnergy === null) {
+    throw new Error("手动修正活动能量时，需要填写有效数值");
+  }
   if (violated && !reason) throw new Error("违反边界时需要选择主要原因");
   const payload = {
     user_id: auth.user.id,
     record_date: recordDate,
     evening_completed_at: new Date().toISOString(),
-    active_energy_kcal: nullableNumber(formData, "active_energy_kcal"),
+    ...(activeEnergyEntryMode === "manual" ? {
+      active_energy_kcal: activeEnergy,
+      active_energy_source: "manual",
+    } : {}),
     meal_count: nullableNumber(formData, "meal_count"),
     had_large_meal: nullableBoolean(formData, "had_large_meal"),
     overeating: nullableBoolean(formData, "overeating"),
@@ -102,7 +147,23 @@ export async function saveEvening(formData: FormData) {
   };
   const { error } = await auth.supabase.from("daily_records").upsert(payload, { onConflict: "user_id,record_date" });
   if (error) throw new Error(error.message);
+  if (activeEnergyEntryMode === "health") {
+    const { error: releaseError } = await auth.supabase
+      .from("daily_records")
+      .update({ active_energy_source: null })
+      .eq("user_id", auth.user.id)
+      .eq("record_date", recordDate);
+    if (releaseError) throw new Error(releaseError.message);
+
+    const { error: refreshError } = await auth.supabase.rpc("refresh_health_daily_records", {
+      p_user_id: auth.user.id,
+      p_dates: [recordDate],
+    });
+    if (refreshError) throw new Error(refreshError.message);
+  }
   revalidatePath("/"); revalidatePath("/analysis"); revalidatePath("/history");
+  revalidatePath("/evening");
+  revalidatePath(`/history/${recordDate}`);
   redirect("/?saved=evening");
 }
 

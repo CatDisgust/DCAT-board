@@ -21,3 +21,9 @@ export function formatSleepDuration(minutes: number | null) {
   if (minutes === null) return "等待时间";
   return `${Math.floor(minutes / 60)} 小时 ${minutes % 60} 分钟`;
 }
+
+export function formatCompactSleepDuration(minutes: number | null) {
+  if (minutes === null) return "—";
+  const roundedMinutes = Math.round(minutes);
+  return `${Math.floor(roundedMinutes / 60)}h ${roundedMinutes % 60}m`;
+}

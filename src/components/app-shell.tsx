@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CalendarDays, Home, MoonStar, Settings, SunMedium } from "lucide-react";
-import type { ReactNode } from "react";
+import { BarChart3, CalendarDays, Home, Leaf, MoonStar, Settings, SunMedium } from "lucide-react";
+import type { MouseEvent, ReactNode } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { UnsavedChangesProvider, useUnsavedChanges } from "@/components/unsaved-changes";
 
 const nav = [
   { href: "/", label: "今日", icon: Home },
@@ -14,12 +17,21 @@ const nav = [
 ];
 
 export function AppShell({ children, demo = false }: { children: ReactNode; demo?: boolean }) {
+  return <UnsavedChangesProvider><AppFrame demo={demo}>{children}</AppFrame></UnsavedChangesProvider>;
+}
+
+function AppFrame({ children, demo }: { children: ReactNode; demo: boolean }) {
   const pathname = usePathname();
+  const { requestNavigation } = useUnsavedChanges();
+  const guardNavigation = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (!requestNavigation()) event.preventDefault();
+  };
   return (
     <div className="app-frame">
       <aside className="sidebar">
-        <Link href="/" className="brand" aria-label="Daymark 首页">
-          <span className="brand-mark">D</span>
+        <Link href="/" className="brand" aria-label="Daymark 首页" onClick={guardNavigation}>
+          <span className="brand-mark"><Leaf size={18} /></span>
           <span>
             <strong>Daymark</strong>
             <small>个人状态工作台</small>
@@ -29,25 +41,29 @@ export function AppShell({ children, demo = false }: { children: ReactNode; demo
           {nav.map(({ href, label, icon: Icon }) => {
             const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (
-              <Link key={href} href={href} className={`nav-link ${active ? "active" : ""}`}>
-                <Icon size={18} strokeWidth={active ? 2.2 : 1.7} />
-                <span>{label}</span>
-              </Link>
+              <Button key={href} asChild variant={active ? "secondary" : "ghost"} size="lg" className="nav-link">
+                <Link href={href} aria-current={active ? "page" : undefined} onClick={guardNavigation}>
+                  <Icon size={18} strokeWidth={active ? 2.2 : 1.7} />
+                  <span>{label}</span>
+                </Link>
+              </Button>
             );
           })}
         </nav>
         <div className="sidebar-footer">
-          {demo && <span className="demo-pill"><i /> 演示数据</span>}
-          <Link href="/settings" className={`nav-link ${pathname.startsWith("/settings") ? "active" : ""}`}>
-            <Settings size={18} strokeWidth={1.7} /> 设置
-          </Link>
+          {demo && <Badge variant="outline" className="demo-pill"><i />演示数据</Badge>}
+          <Button asChild variant={pathname.startsWith("/settings") ? "secondary" : "ghost"} size="lg" className="nav-link">
+            <Link href="/settings" aria-current={pathname.startsWith("/settings") ? "page" : undefined} onClick={guardNavigation}>
+              <Settings size={18} strokeWidth={1.7} /><span>设置</span>
+            </Link>
+          </Button>
         </div>
       </aside>
       <main className="main-content">{children}</main>
       <nav className="mobile-nav" aria-label="移动端导航">
         {nav.map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
-          return <Link key={href} href={href} className={active ? "active" : ""}><Icon size={19} /><span>{label}</span></Link>;
+          return <Link key={href} href={href} className={active ? "active" : ""} onClick={guardNavigation}><Icon size={19} /><span>{label}</span></Link>;
         })}
       </nav>
     </div>

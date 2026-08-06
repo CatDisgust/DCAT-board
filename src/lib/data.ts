@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { demoProfile, demoRecords } from "@/lib/demo-data";
-import type { DailyRecord, Profile } from "@/lib/types";
+import type { DailyRecord, HealthConnection, Profile } from "@/lib/types";
 
 export async function getAppData(limit = 28): Promise<{
   demo: boolean;
@@ -55,4 +55,41 @@ export async function getRecord(date: string) {
     .maybeSingle();
   if (error) throw new Error(error.message);
   return { demo: false, record: data as DailyRecord | null };
+}
+
+export async function getHealthConnectionStatus(): Promise<{ demo: boolean; connection: HealthConnection }> {
+  const disconnected: HealthConnection = {
+    connected: false,
+    deviceName: null,
+    lastSyncedAt: null,
+    lastSuccessAt: null,
+    lastError: null,
+    permissions: {},
+  };
+  if (!isSupabaseConfigured()) return { demo: true, connection: disconnected };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data, error } = await supabase
+    .from("health_sync_devices")
+    .select("device_name,last_synced_at,last_success_at,last_error,permissions")
+    .eq("user_id", user.id)
+    .order("last_success_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+
+  return {
+    demo: false,
+    connection: data ? {
+      connected: Boolean(data.last_success_at),
+      deviceName: data.device_name,
+      lastSyncedAt: data.last_synced_at,
+      lastSuccessAt: data.last_success_at,
+      lastError: data.last_error,
+      permissions: (data.permissions ?? {}) as Record<string, unknown>,
+    } : disconnected,
+  };
 }

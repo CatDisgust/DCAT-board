@@ -73,7 +73,7 @@ export function analyzeRecords(input: DailyRecord[], thresholdKg = 0.2) {
   const morningComplete = recent.filter((r) => r.morning_completed_at).length;
   const eveningComplete = recent.filter((r) => r.evening_completed_at).length;
   const completeness = round((morningComplete + eveningComplete) / 14 * 100, 0) ?? 0;
-  const avgSleep = round(mean(recent.flatMap((r) => r.sleep_duration_minutes === null ? [] : [r.sleep_duration_minutes])));
+  const avgSleep = round(mean(recent.flatMap((r) => r.sleep_duration_minutes === null ? [] : [r.sleep_duration_minutes])), 0);
   const avgClarity = round(mean(recent.flatMap((r) => r.morning_clarity ? [score[r.morning_clarity]] : [])), 1);
   const adherenceRecords = recent.filter((r) => r.boundary_violated !== null);
   const adherenceRate = adherenceRecords.length

@@ -6,6 +6,7 @@ export type FatSugarLevel = "none" | "small" | "significant";
 export type CarbAmount = "low" | "moderate" | "high";
 export type OverallIntake = "low" | "moderate" | "high" | "excessive";
 export type SleepSource = "manual" | "apple_health";
+export type HealthValueSource = "manual" | "apple_health";
 
 export type DailyRecord = {
   id?: string;
@@ -14,6 +15,7 @@ export type DailyRecord = {
   morning_completed_at: string | null;
   evening_completed_at: string | null;
   weight: number | null;
+  weight_source: HealthValueSource | null;
   sleep_start_time: string | null;
   sleep_duration_minutes: number | null;
   wake_time: string | null;
@@ -24,6 +26,8 @@ export type DailyRecord = {
   morning_clarity: MorningClarity | null;
   task_intensity: TaskIntensity | null;
   active_energy_kcal: number | null;
+  active_energy_source: HealthValueSource | null;
+  health_updated_at: string | null;
   meal_count: number | null;
   had_large_meal: boolean | null;
   overeating: boolean | null;
@@ -49,11 +53,21 @@ export type Profile = {
   ai_analysis_enabled: boolean;
 };
 
+export type HealthConnection = {
+  connected: boolean;
+  deviceName: string | null;
+  lastSyncedAt: string | null;
+  lastSuccessAt: string | null;
+  lastError: string | null;
+  permissions: Record<string, unknown>;
+};
+
 export const emptyRecord = (date: string): DailyRecord => ({
   record_date: date,
   morning_completed_at: null,
   evening_completed_at: null,
   weight: null,
+  weight_source: null,
   sleep_start_time: null,
   sleep_duration_minutes: null,
   wake_time: null,
@@ -64,6 +78,8 @@ export const emptyRecord = (date: string): DailyRecord => ({
   morning_clarity: null,
   task_intensity: null,
   active_energy_kcal: null,
+  active_energy_source: null,
+  health_updated_at: null,
   meal_count: null,
   had_large_meal: null,
   overeating: null,

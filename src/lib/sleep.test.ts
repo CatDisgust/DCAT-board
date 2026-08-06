@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateSleepDurationMinutes, formatSleepDuration } from "./sleep";
+import { calculateSleepDurationMinutes, formatCompactSleepDuration, formatSleepDuration } from "./sleep";
 
 describe("sleep duration", () => {
   it("calculates sleep across midnight", () => {
@@ -17,5 +17,10 @@ describe("sleep duration", () => {
 
   it("formats a readable duration", () => {
     expect(formatSleepDuration(430)).toBe("7 小时 10 分钟");
+  });
+
+  it("formats averaged minutes without floating-point noise", () => {
+    expect(formatCompactSleepDuration(405.7)).toBe("6h 46m");
+    expect(formatCompactSleepDuration(null)).toBe("—");
   });
 });

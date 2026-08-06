@@ -35,4 +35,12 @@ describe("analyzeRecords", () => {
     expect(result.boundary.violated.duration).toBe(370);
     expect(result.boundary.violated.clarity).toBe(2);
   });
+
+  it("rounds average sleep to a whole minute", () => {
+    const records = [400, 401, 402, 403, 404, 424].map((minutes, index) => day(`2026-07-${String(index + 1).padStart(2, "0")}`, {
+      sleep_duration_minutes: minutes,
+    }));
+    const result = analyzeRecords(records);
+    expect(result.sleep.averageMinutes).toBe(406);
+  });
 });

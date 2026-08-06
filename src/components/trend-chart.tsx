@@ -18,15 +18,15 @@ export function WeightChart({ records }: { records: DailyRecord[] }) {
         <AreaChart data={data} margin={{ top: 10, right: 8, left: -22, bottom: 0 }}>
           <defs>
             <linearGradient id="weightFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#1f7468" stopOpacity={0.22} />
-              <stop offset="95%" stopColor="#1f7468" stopOpacity={0} />
+              <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.22} />
+              <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid stroke="#e7e5de" strokeDasharray="3 5" vertical={false} />
-          <XAxis dataKey="date" tick={{ fill: "#8b8a83", fontSize: 11 }} tickLine={false} axisLine={false} />
-          <YAxis domain={[min, max]} tick={{ fill: "#8b8a83", fontSize: 11 }} tickLine={false} axisLine={false} />
-          <Tooltip contentStyle={{ borderRadius: 12, borderColor: "#dedbd1", fontSize: 12 }} formatter={(value) => [`${value} kg`, "体重"]} />
-          <Area type="monotone" dataKey="weight" stroke="#1f7468" strokeWidth={2.4} fill="url(#weightFill)" dot={{ r: 3, fill: "#f7f5ef", strokeWidth: 2 }} />
+          <CartesianGrid stroke="var(--border)" strokeDasharray="3 5" vertical={false} />
+          <XAxis dataKey="date" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} tickLine={false} axisLine={false} />
+          <YAxis domain={[min, max]} tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} tickLine={false} axisLine={false} />
+          <Tooltip contentStyle={{ borderRadius: 14, borderColor: "var(--border)", background: "var(--card)", fontSize: 12 }} formatter={(value) => [`${value} kg`, "体重"]} />
+          <Area type="monotone" dataKey="weight" stroke="var(--primary)" strokeWidth={2.4} fill="url(#weightFill)" dot={{ r: 3, fill: "var(--card)", strokeWidth: 2 }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>

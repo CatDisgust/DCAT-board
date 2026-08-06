@@ -1,0 +1,368 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		05606A34835858588C2610BF /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C03C228D8ED9B8F204C30A /* HealthKitService.swift */; };
+		24112978824F0F04530BE944 /* SyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC236F8DF12184C1BB32162C /* SyncCoordinator.swift */; };
+		2515FEE357B51699A68A7957 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1C813F7A4E17B2D787C61C /* ContentView.swift */; };
+		36F2876AAB71C37E7F9DAD34 /* DaymarkHealthApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5734EE1E89777696C67A8F /* DaymarkHealthApp.swift */; };
+		47951B84DFAB0FC3738E2237 /* AnchorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A504803CBA52D8328817ADB0 /* AnchorStore.swift */; };
+		9DA75B28DB8D336E0F5F20AF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CE06A1EFC1D2361B3E2AD7A /* AppDelegate.swift */; };
+		ACFF949D7A9AD2EAC711E9AF /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 245BF09E2458310F9AD17518 /* AppConfig.swift */; };
+		B33386D13518CD0A599B6F4F /* SupabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA78E808AE4C37EA5A4EAE14 /* SupabaseService.swift */; };
+		B5DC93563D4BEE82FB72C455 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F473E7E8FD23ADBDC7B6D2 /* Models.swift */; };
+		D230F896CD1B2234464D7D83 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = A9B11E2D1B2AC49400D4286C /* Supabase */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		245BF09E2458310F9AD17518 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		3CE06A1EFC1D2361B3E2AD7A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		499B51648ED6694C31E2F241 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
+		56C03C228D8ED9B8F204C30A /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
+		6B5734EE1E89777696C67A8F /* DaymarkHealthApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaymarkHealthApp.swift; sourceTree = "<group>"; };
+		7F1C813F7A4E17B2D787C61C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A504803CBA52D8328817ADB0 /* AnchorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorStore.swift; sourceTree = "<group>"; };
+		A52D7E696B9A892830B68845 /* Daymark Health.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Daymark Health.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3F473E7E8FD23ADBDC7B6D2 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		DA78E808AE4C37EA5A4EAE14 /* SupabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseService.swift; sourceTree = "<group>"; };
+		FC236F8DF12184C1BB32162C /* SyncCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncCoordinator.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		26CE938966D01E8C4514C344 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D230F896CD1B2234464D7D83 /* Supabase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7E92E65352EF2CC9EAC240AA /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				499B51648ED6694C31E2F241 /* Local.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		B465BB696694DCF46511E136 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A504803CBA52D8328817ADB0 /* AnchorStore.swift */,
+				245BF09E2458310F9AD17518 /* AppConfig.swift */,
+				3CE06A1EFC1D2361B3E2AD7A /* AppDelegate.swift */,
+				7F1C813F7A4E17B2D787C61C /* ContentView.swift */,
+				6B5734EE1E89777696C67A8F /* DaymarkHealthApp.swift */,
+				56C03C228D8ED9B8F204C30A /* HealthKitService.swift */,
+				C3F473E7E8FD23ADBDC7B6D2 /* Models.swift */,
+				DA78E808AE4C37EA5A4EAE14 /* SupabaseService.swift */,
+				FC236F8DF12184C1BB32162C /* SyncCoordinator.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		C23BB107CE935A69ACC3DA4A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A52D7E696B9A892830B68845 /* Daymark Health.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CAEDCBA949C653F906119E8A = {
+			isa = PBXGroup;
+			children = (
+				7E92E65352EF2CC9EAC240AA /* Config */,
+				B465BB696694DCF46511E136 /* Sources */,
+				C23BB107CE935A69ACC3DA4A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6C2FF1887720C26B25254E1C /* DaymarkHealth */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9968DCC2BCB98DB49EDB9B51 /* Build configuration list for PBXNativeTarget "DaymarkHealth" */;
+			buildPhases = (
+				1F4DBE003DEFEB053425D75E /* Sources */,
+				26CE938966D01E8C4514C344 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DaymarkHealth;
+			packageProductDependencies = (
+				A9B11E2D1B2AC49400D4286C /* Supabase */,
+			);
+			productName = DaymarkHealth;
+			productReference = A52D7E696B9A892830B68845 /* Daymark Health.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D51FF8F039893D64833FFFB6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2600;
+			};
+			buildConfigurationList = 972B2162367FF784C08A096C /* Build configuration list for PBXProject "DaymarkHealth" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = CAEDCBA949C653F906119E8A;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				84ACCD8073F9F3476092CF87 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = C23BB107CE935A69ACC3DA4A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6C2FF1887720C26B25254E1C /* DaymarkHealth */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1F4DBE003DEFEB053425D75E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47951B84DFAB0FC3738E2237 /* AnchorStore.swift in Sources */,
+				ACFF949D7A9AD2EAC711E9AF /* AppConfig.swift in Sources */,
+				9DA75B28DB8D336E0F5F20AF /* AppDelegate.swift in Sources */,
+				2515FEE357B51699A68A7957 /* ContentView.swift in Sources */,
+				36F2876AAB71C37E7F9DAD34 /* DaymarkHealthApp.swift in Sources */,
+				05606A34835858588C2610BF /* HealthKitService.swift in Sources */,
+				B5DC93563D4BEE82FB72C455 /* Models.swift in Sources */,
+				B33386D13518CD0A599B6F4F /* SupabaseService.swift in Sources */,
+				24112978824F0F04530BE944 /* SyncCoordinator.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		101FD2B4901555C38DF52C20 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		4F653A5ED6807D3A4B7618E0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 499B51648ED6694C31E2F241 /* Local.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_ENTITLEMENTS = Config/DaymarkHealth.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 7CSCM43RTP;
+				INFOPLIST_FILE = Config/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.dcat6809.daymark.health;
+				PRODUCT_NAME = "Daymark Health";
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		61449E816D171EDFD68AE95F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		CB518BE0969145AD40835157 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 499B51648ED6694C31E2F241 /* Local.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				CODE_SIGN_ENTITLEMENTS = Config/DaymarkHealth.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 7CSCM43RTP;
+				INFOPLIST_FILE = Config/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.dcat6809.daymark.health;
+				PRODUCT_NAME = "Daymark Health";
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		972B2162367FF784C08A096C /* Build configuration list for PBXProject "DaymarkHealth" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				101FD2B4901555C38DF52C20 /* Debug */,
+				61449E816D171EDFD68AE95F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9968DCC2BCB98DB49EDB9B51 /* Build configuration list for PBXNativeTarget "DaymarkHealth" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F653A5ED6807D3A4B7618E0 /* Debug */,
+				CB518BE0969145AD40835157 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		84ACCD8073F9F3476092CF87 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A9B11E2D1B2AC49400D4286C /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 84ACCD8073F9F3476092CF87 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = D51FF8F039893D64833FFFB6 /* Project object */;
+}

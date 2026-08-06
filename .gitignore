@@ -45,3 +45,9 @@ CLAUDE.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# iOS local configuration and Xcode user state
+/ios/DaymarkHealth/Config/Local.xcconfig
+/ios/DaymarkHealth/*.xcodeproj/xcuserdata/
+/ios/DaymarkHealth/*.xcodeproj/project.xcworkspace/xcuserdata/
+/ios/DaymarkHealth/DerivedData/
