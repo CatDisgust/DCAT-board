@@ -10,9 +10,8 @@ export async function POST() {
   if (!profile.ai_analysis_enabled || !process.env.OPENAI_API_KEY) return NextResponse.json(fallback);
 
   const payload = {
-    window: "rolling_7_days",
+    window: "recent_7_calendar_days",
     completeness: analysis.completeness,
-    weight: analysis.weight,
     diet: analysis.diet,
     sleep: analysis.sleep,
     boundary: analysis.boundary,

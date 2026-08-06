@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import { zhCN } from "date-fns/locale";
-import { ArrowLeft, Flame, MoonStar, PencilLine, Scale, ShieldCheck, SunMedium, Utensils } from "lucide-react";
+import { ArrowLeft, Flame, MoonStar, PencilLine, Percent, Ruler, Scale, ShieldCheck, SunMedium, Utensils } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { labels, violationReasons } from "@/lib/constants";
-import { getRecord } from "@/lib/data";
+import { getHistoryDetailData } from "@/lib/data";
 import { isRecordDate } from "@/lib/record-date";
 import { formatCompactSleepDuration } from "@/lib/sleep";
 
@@ -55,7 +55,7 @@ export default async function HistoryDetailPage({ params }: { params: Promise<{ 
   const { date } = await params;
   if (!isRecordDate(date)) notFound();
 
-  const { demo, record } = await getRecord(date);
+  const { demo, record, measurement } = await getHistoryDetailData(date);
   if (!record) notFound();
 
   const parsedDate = parseISO(record.record_date);
@@ -78,6 +78,10 @@ export default async function HistoryDetailPage({ params }: { params: Promise<{ 
           <div><p>体重</p><strong>{record.weight === null ? "—" : `${record.weight} kg`}</strong><small>{sourceValue(record.weight_source)}</small></div>
         </Card>
         <Card className="surface history-metric-card gap-0 py-0">
+          <span className="history-metric-icon"><Percent /></span>
+          <div><p>体脂率</p><strong>{record.body_fat_percentage === null ? "—" : `${record.body_fat_percentage}%`}</strong><small>{sourceValue(record.body_fat_source)}</small></div>
+        </Card>
+        <Card className="surface history-metric-card gap-0 py-0">
           <span className="history-metric-icon"><MoonStar /></span>
           <div><p>睡眠</p><strong>{formatCompactSleepDuration(record.sleep_duration_minutes)}</strong><small>{sourceValue(record.sleep_source)}</small></div>
         </Card>
@@ -86,6 +90,21 @@ export default async function HistoryDetailPage({ params }: { params: Promise<{ 
           <div><p>活动能量</p><strong>{record.active_energy_kcal === null ? "—" : `${record.active_energy_kcal} kcal`}</strong><small>{sourceValue(record.active_energy_source)}</small></div>
         </Card>
       </div>
+
+      {measurement && (
+        <Card className="surface history-detail-card history-body-card gap-0 py-0">
+          <div className="history-detail-heading">
+            <div className="history-detail-title"><span><Ruler /></span><div><h2>三围测量</h2><p>当天保存的最终测量结果</p></div></div>
+            <Button asChild variant="outline" size="sm"><Link href={`/body?date=${date}`}><PencilLine />编辑</Link></Button>
+          </div>
+          <Separator />
+          <div className="history-detail-list compact">
+            <DetailItem label="胸围" value={`${measurement.chest_cm} cm`} />
+            <DetailItem label="腰围" value={`${measurement.waist_cm} cm`} />
+            <DetailItem label="臀围" value={`${measurement.hip_cm} cm`} />
+          </div>
+        </Card>
+      )}
 
       <div className="history-detail-columns">
         <Card className="surface history-detail-card gap-0 py-0">

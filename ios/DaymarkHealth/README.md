@@ -1,12 +1,12 @@
 # Daymark Health Companion
 
-Daymark 的 iPhone companion app。它以只读方式访问 Apple Health，将睡眠阶段、体重和每日活动能量同步到现有 Supabase 项目。
+Daymark 的 iPhone companion app。它以只读方式访问 Apple Health，将睡眠阶段、体重、体脂率和每日活动能量同步到现有 Supabase 项目。
 
 ## 数据流
 
 Apple Health → iPhone 本地标准化 → ingest_health_samples RPC → health_samples → daily_records
 
-同步不会覆盖来源为 manual 的体重、睡眠或活动能量。HealthKit 的 query anchor 仅保存在设备本地，成功上传后才推进。
+同步不会覆盖来源为 manual 的体重、体脂、睡眠或活动能量。HealthKit 的 query anchor 仅保存在设备本地，成功上传后才推进。
 
 ## 本地配置
 

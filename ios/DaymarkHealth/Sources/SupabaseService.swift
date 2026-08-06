@@ -83,10 +83,11 @@ final class SupabaseService: ObservableObject {
             deletedIdentifiers: batch.deletedIdentifiers,
             deviceID: DeviceIdentity.id,
             deviceName: UIDevice.current.name,
-            appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0",
+            appVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "2.0.0",
             permissions: [
                 "sleep_requested": true,
                 "body_mass_requested": true,
+                "body_fat_requested": true,
                 "active_energy_requested": true,
             ]
         )

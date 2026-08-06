@@ -1,8 +1,10 @@
-import { format, subDays } from "date-fns";
-import type { DailyRecord, Profile } from "./types";
+import { format, parseISO, subDays } from "date-fns";
+import type { BodyMeasurement, DailyRecord, Profile } from "./types";
+import { dateInTimeZone } from "./user-date";
 
-const today = new Date();
+const today = parseISO(dateInTimeZone(new Date(), "Australia/Sydney"));
 const weights = [72.9, 72.8, 72.7, 72.8, 72.5, 72.4, 72.3, 72.1, 72.2, 72.0, 71.9, 71.8, 71.9, 71.7];
+const bodyFat = [19.4, 19.3, 19.4, 19.1, 19.0, 18.9, 18.8, 18.9, 18.7, 18.6, 18.5, 18.4, 18.5, 18.3];
 
 export const demoRecords: DailyRecord[] = Array.from({ length: 14 }, (_, index) => {
   const daysAgo = 13 - index;
@@ -14,6 +16,8 @@ export const demoRecords: DailyRecord[] = Array.from({ length: 14 }, (_, index) 
     evening_completed_at: isToday ? null : new Date().toISOString(),
     weight: weights[index],
     weight_source: "manual",
+    body_fat_percentage: bodyFat[index],
+    body_fat_source: "manual",
     sleep_start_time: violated ? "00:42" : index % 3 === 0 ? "23:38" : "23:18",
     sleep_duration_minutes: violated ? 378 : 432 + (index % 3) * 12,
     wake_time: violated ? "07:05" : "07:02",
@@ -42,6 +46,13 @@ export const demoRecords: DailyRecord[] = Array.from({ length: 14 }, (_, index) 
     thoughts_expanding_at_night: isToday ? null : violated,
   };
 });
+
+export const demoBodyMeasurements: BodyMeasurement[] = [28, 14, 0].map((daysAgo, index) => ({
+  measurement_date: format(subDays(today, daysAgo), "yyyy-MM-dd"),
+  chest_cm: [98.4, 97.9, 97.5][index],
+  waist_cm: [84.6, 83.7, 82.9][index],
+  hip_cm: [99.2, 98.8, 98.4][index],
+}));
 
 export const demoProfile: Profile = {
   email: "demo@personal-dashboard.app",

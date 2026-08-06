@@ -28,6 +28,10 @@ final class HealthKitService: @unchecked Sendable {
         HKObjectType.quantityType(forIdentifier: .bodyMass)!
     }
 
+    private var bodyFatType: HKQuantityType {
+        HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!
+    }
+
     private var activeEnergyType: HKQuantityType {
         HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!
     }
@@ -40,7 +44,7 @@ final class HealthKitService: @unchecked Sendable {
 
     func requestAuthorization() async throws {
         guard isAvailable else { throw SyncError.healthDataUnavailable }
-        let readTypes: Set<HKObjectType> = [sleepType, bodyMassType, activeEnergyType]
+        let readTypes: Set<HKObjectType> = [sleepType, bodyMassType, bodyFatType, activeEnergyType]
         try await store.requestAuthorization(toShare: [], read: readTypes)
         UserDefaults.standard.set(true, forKey: "daymark.health.permission.requested")
         enableBackgroundDelivery()
@@ -48,7 +52,7 @@ final class HealthKitService: @unchecked Sendable {
 
     func configureBackgroundDelivery(onUpdate: @escaping @Sendable () async -> Void) {
         guard isAvailable, observerQueries.isEmpty else { return }
-        for type in [sleepType, bodyMassType, activeEnergyType] as [HKSampleType] {
+        for type in [sleepType, bodyMassType, bodyFatType, activeEnergyType] as [HKSampleType] {
             let query = HKObserverQuery(sampleType: type, predicate: nil) { _, completion, _ in
                 let completionBox = ObserverCompletion(completion)
                 Task {
@@ -80,16 +84,26 @@ final class HealthKitService: @unchecked Sendable {
             to: end,
             anchorKey: HKQuantityTypeIdentifier.bodyMass.rawValue
         )
+        async let bodyFatResult = anchoredSamples(
+            type: bodyFatType,
+            from: start,
+            to: end,
+            anchorKey: HKQuantityTypeIdentifier.bodyFatPercentage.rawValue
+        )
         async let energySamples = dailyActiveEnergy(from: start, to: end, calendar: calendar)
 
-        let (sleep, weight, energy) = try await (sleepResult, weightResult, energySamples)
+        let (sleep, weight, bodyFat, energy) = try await (sleepResult, weightResult, bodyFatResult, energySamples)
         let sleepPayloads: [HealthSamplePayload] = sleep.samples.compactMap { sample -> HealthSamplePayload? in
             guard let category = sample as? HKCategorySample else { return nil }
             return sleepPayload(from: category, calendar: calendar)
         }
         let weightPayloads: [HealthSamplePayload] = weight.samples.compactMap { sample -> HealthSamplePayload? in
             guard let quantity = sample as? HKQuantitySample else { return nil }
-            return quantityPayload(from: quantity, calendar: calendar)
+            return weightPayload(from: quantity, calendar: calendar)
+        }
+        let bodyFatPayloads: [HealthSamplePayload] = bodyFat.samples.compactMap { sample -> HealthSamplePayload? in
+            guard let quantity = sample as? HKQuantitySample else { return nil }
+            return bodyFatPayload(from: quantity, calendar: calendar)
         }
 
         var anchors: [String: HKQueryAnchor] = [:]
@@ -99,11 +113,14 @@ final class HealthKitService: @unchecked Sendable {
         if let anchor = weight.anchor {
             anchors[HKQuantityTypeIdentifier.bodyMass.rawValue] = anchor
         }
+        if let anchor = bodyFat.anchor {
+            anchors[HKQuantityTypeIdentifier.bodyFatPercentage.rawValue] = anchor
+        }
 
         return HealthSyncBatch(
-            samples: sleepPayloads + weightPayloads + energy,
+            samples: sleepPayloads + weightPayloads + bodyFatPayloads + energy,
             deletedIdentifiers:
-                (sleep.deleted + weight.deleted).map(\.uuid.uuidString)
+                (sleep.deleted + weight.deleted + bodyFat.deleted).map(\.uuid.uuidString)
                 + activeEnergyIdentifiers(from: start, to: end, calendar: calendar),
             anchors: anchors
         )
@@ -200,7 +217,7 @@ final class HealthKitService: @unchecked Sendable {
     }
 
     private func enableBackgroundDelivery() {
-        for type in [sleepType, bodyMassType, activeEnergyType] as [HKSampleType] {
+        for type in [sleepType, bodyMassType, bodyFatType, activeEnergyType] as [HKSampleType] {
             store.enableBackgroundDelivery(for: type, frequency: .hourly) { _, _ in }
         }
     }
@@ -225,7 +242,7 @@ final class HealthKitService: @unchecked Sendable {
         )
     }
 
-    private func quantityPayload(
+    private func weightPayload(
         from sample: HKQuantitySample,
         calendar: Calendar
     ) -> HealthSamplePayload {
@@ -238,6 +255,26 @@ final class HealthKitService: @unchecked Sendable {
             endAt: isoFormatter.string(from: sample.endDate),
             value: sample.quantity.doubleValue(for: .gramUnit(with: .kilo)),
             unit: "kg",
+            sourceBundleID: sample.sourceRevision.source.bundleIdentifier,
+            sourceName: sample.sourceRevision.source.name,
+            deviceName: sample.device?.name,
+            metadata: [:]
+        )
+    }
+
+    private func bodyFatPayload(
+        from sample: HKQuantitySample,
+        calendar: Calendar
+    ) -> HealthSamplePayload {
+        HealthSamplePayload(
+            sourceIdentifier: sample.uuid.uuidString,
+            sampleType: "body_fat",
+            sampleSubtype: nil,
+            recordDate: dateString(sample.endDate, calendar: calendar),
+            startAt: isoFormatter.string(from: sample.startDate),
+            endAt: isoFormatter.string(from: sample.endDate),
+            value: sample.quantity.doubleValue(for: .percent()) * 100,
+            unit: "%",
             sourceBundleID: sample.sourceRevision.source.bundleIdentifier,
             sourceName: sample.sourceRevision.source.name,
             deviceName: sample.device?.name,

@@ -16,6 +16,8 @@ export type DailyRecord = {
   evening_completed_at: string | null;
   weight: number | null;
   weight_source: HealthValueSource | null;
+  body_fat_percentage: number | null;
+  body_fat_source: HealthValueSource | null;
   sleep_start_time: string | null;
   sleep_duration_minutes: number | null;
   wake_time: string | null;
@@ -44,6 +46,17 @@ export type DailyRecord = {
   thoughts_expanding_at_night: boolean | null;
 };
 
+export type BodyMeasurement = {
+  id?: string;
+  user_id?: string;
+  measurement_date: string;
+  chest_cm: number;
+  waist_cm: number;
+  hip_cm: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type Profile = {
   email?: string | null;
   timezone: string;
@@ -68,6 +81,8 @@ export const emptyRecord = (date: string): DailyRecord => ({
   evening_completed_at: null,
   weight: null,
   weight_source: null,
+  body_fat_percentage: null,
+  body_fat_source: null,
   sleep_start_time: null,
   sleep_duration_minutes: null,
   wake_time: null,

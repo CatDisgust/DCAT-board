@@ -4,6 +4,8 @@ import Combine
 @MainActor
 final class SyncCoordinator: ObservableObject {
     static let shared = SyncCoordinator()
+    private static let authorizationVersion = 2
+    private static let authorizationVersionKey = "daymark.health.permission.version"
 
     enum State: Equatable {
         case idle
@@ -15,7 +17,7 @@ final class SyncCoordinator: ObservableObject {
 
     @Published private(set) var state: State = .idle
     @Published private(set) var permissionRequested =
-        UserDefaults.standard.bool(forKey: "daymark.health.permission.requested")
+        UserDefaults.standard.integer(forKey: authorizationVersionKey) >= authorizationVersion
 
     private let health = HealthKitService.shared
     private let supabase = SupabaseService.shared
@@ -26,6 +28,7 @@ final class SyncCoordinator: ObservableObject {
         state = .requestingPermission
         do {
             try await health.requestAuthorization()
+            UserDefaults.standard.set(Self.authorizationVersion, forKey: Self.authorizationVersionKey)
             permissionRequested = true
             await sync(days: 30)
         } catch {

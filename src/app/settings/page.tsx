@@ -50,6 +50,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <span><Smartphone size={14} />睡眠阶段</span>
             <span><Activity size={14} />活动能量</span>
             <span><HeartPulse size={14} />体重</span>
+            <span><HeartPulse size={14} />体脂率</span>
           </div>
           {connection.lastError && <Alert variant="destructive" className="mt-4"><AlertDescription>最近同步失败：{connection.lastError}</AlertDescription></Alert>}
           {!connection.connected && <p className="health-connection-help">在 iPhone App 中使用同一邮箱登录，授权以上三类数据后会自动建立连接。</p>}

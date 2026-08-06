@@ -52,7 +52,7 @@ private struct LoginView: View {
                 Text("让健康数据\n自然进入 Daymark")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .tracking(-1.2)
-                Text("使用网页端相同的邮箱登录。授权由 Apple Health 管理，Daymark 只读取睡眠、体重和活动能量。")
+                Text("使用网页端相同的邮箱登录。授权由 Apple Health 管理，Daymark 只读取睡眠、体重、体脂和活动能量。")
                     .foregroundStyle(.secondary)
                     .lineSpacing(5)
 
@@ -123,6 +123,7 @@ private struct HealthDashboardView: View {
                     DataTypeRow(icon: "bed.double.fill", title: "睡眠阶段", detail: "入睡、清醒、核心、深睡与 REM")
                     DataTypeRow(icon: "figure.walk", title: "活动能量", detail: "按你的时区聚合为每日 kcal")
                     DataTypeRow(icon: "scalemass.fill", title: "体重", detail: "每日使用最新一条测量值")
+                    DataTypeRow(icon: "percent", title: "体脂率", detail: "每日使用最新一条测量值")
                 }
                 .cardStyle()
 

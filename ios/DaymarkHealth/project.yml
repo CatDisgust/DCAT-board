@@ -40,12 +40,12 @@ targets:
       path: Config/Info.plist
       properties:
         CFBundleDisplayName: Daymark Health
-        CFBundleShortVersionString: "1.0.0"
+        CFBundleShortVersionString: "2.0.0"
         CFBundleVersion: "1"
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
-        NSHealthShareUsageDescription: Daymark 读取你的睡眠、体重和活动能量，用于生成只对你可见的个人状态趋势。
+        NSHealthShareUsageDescription: Daymark 读取你的睡眠、体重、体脂和活动能量，用于生成只对你可见的个人状态趋势。
         CFBundleURLTypes:
           - CFBundleTypeRole: Editor
             CFBundleURLName: com.dcat.daymark.health

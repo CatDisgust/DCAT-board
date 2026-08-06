@@ -23,6 +23,58 @@ const nullableBoolean = (form: FormData, key: string) => {
   return value === null ? null : value === "true";
 };
 
+const requiredNumber = (form: FormData, key: string, min: number, max: number, message: string) => {
+  const value = nullableNumber(form, key);
+  if (value === null || value < min || value > max) throw new Error(message);
+  return value;
+};
+
+const bodyCompositionInput = (formData: FormData) => {
+  const weightMode = nullableString(formData, "weight_entry_mode") === "manual" ? "manual" : "health";
+  const bodyFatMode = nullableString(formData, "body_fat_entry_mode") === "manual" ? "manual" : "health";
+  const weight = nullableNumber(formData, "weight");
+  const bodyFat = nullableNumber(formData, "body_fat_percentage");
+  if (weightMode === "manual" && (weight === null || weight < 20 || weight > 300)) {
+    throw new Error("手动修正体重时，需要填写 20–300 kg 的有效数值");
+  }
+  if (bodyFatMode === "manual" && (bodyFat === null || bodyFat < 0 || bodyFat > 100)) {
+    throw new Error("手动修正体脂时，需要填写 0–100% 的有效数值");
+  }
+  return {
+    payload: {
+      ...(weightMode === "manual" ? { weight, weight_source: "manual" } : {}),
+      ...(bodyFatMode === "manual" ? { body_fat_percentage: bodyFat, body_fat_source: "manual" } : {}),
+    },
+    releasedSources: {
+      ...(weightMode === "health" ? { weight_source: null } : {}),
+      ...(bodyFatMode === "health" ? { body_fat_source: null } : {}),
+    },
+    usesHealth: weightMode === "health" || bodyFatMode === "health",
+    hasManual: weightMode === "manual" || bodyFatMode === "manual",
+  };
+};
+
+async function releaseAndRefreshHealth(
+  auth: Awaited<ReturnType<typeof authenticatedClient>>,
+  recordDate: string,
+  releasedSources: Record<string, null>,
+) {
+  if (!auth) return;
+  if (Object.keys(releasedSources).length > 0) {
+    const { error } = await auth.supabase
+      .from("daily_records")
+      .update(releasedSources)
+      .eq("user_id", auth.user.id)
+      .eq("record_date", recordDate);
+    if (error) throw new Error(error.message);
+  }
+  const { error } = await auth.supabase.rpc("refresh_health_daily_records", {
+    p_user_id: auth.user.id,
+    p_dates: [recordDate],
+  });
+  if (error) throw new Error(error.message);
+}
+
 async function authenticatedClient() {
   if (!isSupabaseConfigured()) return null;
   const supabase = await createClient();
@@ -54,12 +106,8 @@ export async function saveMorning(formData: FormData) {
   const sleepStartTime = nullableString(formData, "sleep_start_time");
   const wakeTime = nullableString(formData, "wake_time");
   const sleepEntryMode = nullableString(formData, "sleep_entry_mode") === "manual" ? "manual" : "health";
-  const weightEntryMode = nullableString(formData, "weight_entry_mode") === "manual" ? "manual" : "health";
+  const bodyComposition = bodyCompositionInput(formData);
   const sleepDuration = calculateSleepDurationMinutes(sleepStartTime, wakeTime);
-  const weight = nullableNumber(formData, "weight");
-  if (weightEntryMode === "manual" && weight === null) {
-    throw new Error("手动修正体重时，需要填写有效数值");
-  }
   if (sleepEntryMode === "manual" && (!sleepStartTime || !wakeTime || sleepDuration === null)) {
     throw new Error("手动修正睡眠时，需要填写有效且不同的入睡和起床时间");
   }
@@ -67,10 +115,7 @@ export async function saveMorning(formData: FormData) {
     user_id: auth.user.id,
     record_date: recordDate,
     morning_completed_at: new Date().toISOString(),
-    ...(weightEntryMode === "manual" ? {
-      weight,
-      weight_source: "manual",
-    } : {}),
+    ...bodyComposition.payload,
     ...(sleepEntryMode === "manual" ? {
       sleep_start_time: sleepStartTime,
       sleep_duration_minutes: sleepDuration,
@@ -85,28 +130,61 @@ export async function saveMorning(formData: FormData) {
   };
   const { error } = await auth.supabase.from("daily_records").upsert(payload, { onConflict: "user_id,record_date" });
   if (error) throw new Error(error.message);
-  if (sleepEntryMode === "health" || weightEntryMode === "health") {
+  if (sleepEntryMode === "health" || bodyComposition.usesHealth) {
     const releasedSources = {
       ...(sleepEntryMode === "health" ? { sleep_source: null } : {}),
-      ...(weightEntryMode === "health" ? { weight_source: null } : {}),
+      ...bodyComposition.releasedSources,
     };
-    const { error: releaseError } = await auth.supabase
-      .from("daily_records")
-      .update(releasedSources)
-      .eq("user_id", auth.user.id)
-      .eq("record_date", recordDate);
-    if (releaseError) throw new Error(releaseError.message);
-
-    const { error: refreshError } = await auth.supabase.rpc("refresh_health_daily_records", {
-      p_user_id: auth.user.id,
-      p_dates: [recordDate],
-    });
-    if (refreshError) throw new Error(refreshError.message);
+    await releaseAndRefreshHealth(auth, recordDate, releasedSources);
   }
-  revalidatePath("/"); revalidatePath("/analysis"); revalidatePath("/history");
+  revalidatePath("/"); revalidatePath("/analysis"); revalidatePath("/history"); revalidatePath("/body");
   revalidatePath("/morning");
   revalidatePath(`/history/${recordDate}`);
   redirect("/?saved=morning");
+}
+
+export async function saveBodyComposition(formData: FormData) {
+  const auth = await authenticatedClient();
+  if (!auth) redirect("/body?demo=1");
+  const recordDate = nullableString(formData, "record_date");
+  if (!isRecordDate(recordDate)) throw new Error("记录日期无效");
+  const bodyComposition = bodyCompositionInput(formData);
+
+  if (bodyComposition.hasManual) {
+    const { error } = await auth.supabase.from("daily_records").upsert({
+      user_id: auth.user.id,
+      record_date: recordDate,
+      ...bodyComposition.payload,
+    }, { onConflict: "user_id,record_date" });
+    if (error) throw new Error(error.message);
+  }
+  if (bodyComposition.usesHealth) {
+    await releaseAndRefreshHealth(auth, recordDate, bodyComposition.releasedSources);
+  }
+
+  revalidatePath("/"); revalidatePath("/analysis"); revalidatePath("/history"); revalidatePath("/morning"); revalidatePath("/body");
+  revalidatePath(`/history/${recordDate}`);
+  redirect(`/body?date=${recordDate}&saved=composition`);
+}
+
+export async function saveBodyMeasurement(formData: FormData) {
+  const auth = await authenticatedClient();
+  if (!auth) redirect("/body?demo=1");
+  const measurementDate = nullableString(formData, "measurement_date");
+  if (!isRecordDate(measurementDate)) throw new Error("测量日期无效");
+  const payload = {
+    user_id: auth.user.id,
+    measurement_date: measurementDate,
+    chest_cm: requiredNumber(formData, "chest_cm", 1, 300, "胸围需要填写 1–300 cm 的有效数值"),
+    waist_cm: requiredNumber(formData, "waist_cm", 1, 300, "腰围需要填写 1–300 cm 的有效数值"),
+    hip_cm: requiredNumber(formData, "hip_cm", 1, 300, "臀围需要填写 1–300 cm 的有效数值"),
+  };
+  const { error } = await auth.supabase.from("body_measurements").upsert(payload, { onConflict: "user_id,measurement_date" });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/body"); revalidatePath("/analysis"); revalidatePath("/history");
+  revalidatePath(`/history/${measurementDate}`);
+  redirect(`/body?date=${measurementDate}&saved=measurement`);
 }
 
 export async function saveEvening(formData: FormData) {

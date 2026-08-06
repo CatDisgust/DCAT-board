@@ -1,23 +1,20 @@
-import { format } from "date-fns";
 import { AppShell } from "@/components/app-shell";
 import { Choice, ChoiceField } from "@/components/choice-field";
 import { PageHeader } from "@/components/page-header";
 import { DatePicker } from "@/components/date-picker";
 import { SleepFields } from "@/components/sleep-fields";
-import { HealthNumberField } from "@/components/health-number-field";
+import { BodyCompositionFields } from "@/components/body-composition-fields";
 import { Card } from "@/components/ui/card";
 import { FormSaveBar, TrackedForm } from "@/components/tracked-form";
 import { saveMorning } from "@/app/actions";
 import { clarityOptions, sleepQualityOptions, taskIntensityOptions } from "@/lib/constants";
-import { getRecord } from "@/lib/data";
-import { recordDateOr } from "@/lib/record-date";
+import { getRecordPageData } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 export default async function MorningPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   const params = await searchParams;
-  const date = recordDateOr(params.date, format(new Date(), "yyyy-MM-dd"));
-  const { demo, record } = await getRecord(date);
+  const { demo, date, record } = await getRecordPageData(params.date);
   return (
     <AppShell demo={demo}>
       <PageHeader eyebrow="MORNING CHECK-IN" title="晨间状态" description="记录昨夜恢复与当前感受，然后由你决定今天能承受多少认知工作。" actions={<DatePicker value={date} />} />
@@ -27,7 +24,7 @@ export default async function MorningPage({ searchParams }: { searchParams: Prom
         <Card className="surface form-section gap-0 py-0">
           <div className="form-section-title"><span>01</span><div><h2>客观数据</h2><p>睡眠默认来自 Apple Health；只有数据异常时才需要手动修正</p></div></div>
           <div className="input-grid">
-            <HealthNumberField id="weight" name="weight" modeName="weight_entry_mode" label="体重" unit="kg" value={record?.weight ?? null} source={record?.weight_source ?? null} min={20} max={300} step={0.1} placeholder="例如 71.8" />
+            <BodyCompositionFields record={record} />
             <SleepFields record={record} />
           </div>
         </Card>

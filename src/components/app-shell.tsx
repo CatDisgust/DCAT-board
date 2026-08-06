@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CalendarDays, Home, Leaf, MoonStar, Settings, SunMedium } from "lucide-react";
+import { BarChart3, CalendarDays, Home, Leaf, MoonStar, Ruler, Settings, SunMedium } from "lucide-react";
 import type { MouseEvent, ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ const nav = [
   { href: "/", label: "今日", icon: Home },
   { href: "/morning", label: "晨间", icon: SunMedium },
   { href: "/evening", label: "晚间", icon: MoonStar },
+  { href: "/body", label: "身体", icon: Ruler },
   { href: "/history", label: "历史", icon: CalendarDays },
   { href: "/analysis", label: "分析", icon: BarChart3 },
 ];

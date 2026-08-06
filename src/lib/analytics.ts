@@ -1,5 +1,5 @@
 import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns";
-import type { DailyRecord } from "./types";
+import type { BodyMeasurement, DailyRecord } from "./types";
 
 export type Trend = "down" | "stable" | "up" | "insufficient";
 
@@ -17,19 +17,79 @@ const bedtimeMinutes = (time: string | null) => {
   return (hour < 12 ? hour + 24 : hour) * 60 + minute;
 };
 
+function metricTrend(
+  recentValues: number[],
+  previousValues: number[],
+  threshold: number,
+) {
+  const recentMean = mean(recentValues);
+  const previousMean = mean(previousValues);
+  const change = recentMean !== null && previousMean !== null ? recentMean - previousMean : null;
+  const sufficient = recentValues.length >= 4 && previousValues.length >= 4;
+  const trend: Trend = !sufficient || change === null
+    ? "insufficient"
+    : change < -threshold ? "down" : change > threshold ? "up" : "stable";
+  return {
+    trend,
+    recentMean: round(recentMean, 2),
+    previousMean: round(previousMean, 2),
+    change: round(change, 2),
+    sample: recentValues.length,
+  };
+}
+
+export function todayMetricComparison(
+  input: DailyRecord[],
+  date: string,
+  field: "sleep_duration_minutes" | "weight" | "body_fat_percentage",
+) {
+  const records = [...input].sort((a, b) => a.record_date.localeCompare(b.record_date));
+  const current = records.find((record) => record.record_date === date)?.[field] ?? null;
+  const previousValues = records
+    .filter((record) => record.record_date < date && record[field] !== null)
+    .slice(-7)
+    .map((record) => record[field] as number);
+  const baseline = previousValues.length >= 3 ? mean(previousValues) : null;
+  return {
+    current,
+    baseline: round(baseline, field === "sleep_duration_minutes" ? 0 : 2),
+    change: current !== null && baseline !== null
+      ? round(current - baseline, field === "sleep_duration_minutes" ? 0 : 2)
+      : null,
+    sample: previousValues.length,
+  };
+}
+
+export function analyzeBodyMeasurements(input: BodyMeasurement[]) {
+  const measurements = [...input].sort((a, b) => a.measurement_date.localeCompare(b.measurement_date));
+  const latest = measurements.at(-1) ?? null;
+  const previous = measurements.at(-2) ?? null;
+  const change = latest && previous ? {
+    chest: round(latest.chest_cm - previous.chest_cm, 1),
+    waist: round(latest.waist_cm - previous.waist_cm, 1),
+    hip: round(latest.hip_cm - previous.hip_cm, 1),
+  } : { chest: null, waist: null, hip: null };
+  return { latest, previous, change, chart: measurements.slice(-12) };
+}
+
 export function analyzeRecords(input: DailyRecord[], thresholdKg = 0.2) {
   const records = [...input].sort((a, b) => a.record_date.localeCompare(b.record_date));
-  const recent = records.slice(-7);
-  const previous = records.slice(-14, -7);
+  const latestDate = records.at(-1)?.record_date ?? null;
+  const recentStart = latestDate ? format(addDays(parseISO(latestDate), -6), "yyyy-MM-dd") : null;
+  const previousStart = latestDate ? format(addDays(parseISO(latestDate), -13), "yyyy-MM-dd") : null;
+  const previousEnd = latestDate ? format(addDays(parseISO(latestDate), -7), "yyyy-MM-dd") : null;
+  const recent = latestDate && recentStart
+    ? records.filter((record) => record.record_date >= recentStart && record.record_date <= latestDate)
+    : [];
+  const previous = previousStart && previousEnd
+    ? records.filter((record) => record.record_date >= previousStart && record.record_date <= previousEnd)
+    : [];
   const recentWeights = recent.flatMap((r) => r.weight === null ? [] : [r.weight]);
   const previousWeights = previous.flatMap((r) => r.weight === null ? [] : [r.weight]);
-  const recentMean = mean(recentWeights);
-  const previousMean = mean(previousWeights);
-  const weightChange = recentMean !== null && previousMean !== null ? recentMean - previousMean : null;
-  const hasWeightData = recentWeights.length >= 4 && previousWeights.length >= 4;
-  const weightTrend: Trend = !hasWeightData || weightChange === null
-    ? "insufficient"
-    : weightChange < -thresholdKg ? "down" : weightChange > thresholdKg ? "up" : "stable";
+  const recentBodyFat = recent.flatMap((r) => r.body_fat_percentage === null ? [] : [r.body_fat_percentage]);
+  const previousBodyFat = previous.flatMap((r) => r.body_fat_percentage === null ? [] : [r.body_fat_percentage]);
+  const weight = metricTrend(recentWeights, previousWeights, thresholdKg);
+  const bodyFat = metricTrend(recentBodyFat, previousBodyFat, 0.3);
 
   const eveningRecords = recent.filter((r) => r.evening_completed_at);
   const frequency = (predicate: (record: DailyRecord) => boolean) =>
@@ -86,8 +146,9 @@ export function analyzeRecords(input: DailyRecord[], thresholdKg = 0.2) {
     completeness,
     morningComplete,
     eveningComplete,
-    weight: { trend: weightTrend, recentMean: round(recentMean, 2), previousMean: round(previousMean, 2), change: round(weightChange, 2), sample: recentWeights.length },
-    diet: { trend: weightTrend, sample: eveningRecords.length, signals: dietSignals.slice(0, 3) },
+    weight,
+    bodyFat,
+    diet: { trend: weight.trend, sample: eveningRecords.length, signals: dietSignals.slice(0, 3) },
     sleep: { averageMinutes: avgSleep, averageClarity: avgClarity, sample: recent.filter((r) => r.sleep_duration_minutes !== null).length },
     boundary: { adherenceRate, sample: adherenceRecords.length, followed, violated, sufficient: followed.n >= 3 && violated.n >= 3 },
   };
@@ -109,10 +170,9 @@ export function formatClock(totalMinutes: number | null) {
 }
 
 export function ruleBasedNarrative(analysis: AnalysisResult) {
-  const trend = analysis.weight.trend;
-  const current = trend === "insufficient"
-    ? "当前体重数据不足，还不能判断饮食更接近减脂、持平还是增重。"
-    : `两个相邻 7 日窗口相比，平均体重${trendText[trend]}${analysis.weight.change === null ? "" : ` ${Math.abs(analysis.weight.change)} kg`}；当前饮食记录更接近${trend === "down" ? "减脂" : trend === "up" ? "增重" : "持平"}方向。`;
+  const current = analysis.diet.sample === 0
+    ? "最近 7 天的晚间记录不足，还不能描述饮食与边界行为模式。"
+    : `最近 7 天有 ${analysis.diet.sample} 次有效晚间记录；当前只描述行为出现频率，不使用身体变化反推饮食结论。`;
   const reasons = analysis.diet.signals.filter((item) => (item.rate ?? 0) > 0).slice(0, 3).map((item) => `${item.label}出现在 ${item.rate}% 的已记录晚间`);
   const limitations = [
     `近 7 日记录完整度为 ${analysis.completeness}%`,
