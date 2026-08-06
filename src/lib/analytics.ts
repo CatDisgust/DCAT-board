@@ -170,14 +170,18 @@ export function formatClock(totalMinutes: number | null) {
 }
 
 export function ruleBasedNarrative(analysis: AnalysisResult) {
-  const current = analysis.diet.sample === 0
-    ? "最近 7 天的晚间记录不足，还不能描述饮食与边界行为模式。"
-    : `最近 7 天有 ${analysis.diet.sample} 次有效晚间记录；当前只描述行为出现频率，不使用身体变化反推饮食结论。`;
-  const reasons = analysis.diet.signals.filter((item) => (item.rate ?? 0) > 0).slice(0, 3).map((item) => `${item.label}出现在 ${item.rate}% 的已记录晚间`);
+  const current = analysis.boundary.sample === 0
+    ? "最近 7 天的晚间记录不足，还不能描述睡眠与认知边界模式。"
+    : `最近 7 天有 ${analysis.boundary.sample} 次有效边界记录；当前只描述睡眠与边界行为，不评价饮食。`;
+  const reasons = [
+    analysis.sleep.averageMinutes === null ? null : `最近 7 天平均睡眠 ${analysis.sleep.averageMinutes} 分钟`,
+    analysis.boundary.adherenceRate === null ? null : `认知边界遵守率为 ${analysis.boundary.adherenceRate}%`,
+    analysis.sleep.averageClarity === null ? null : `平均晨间清醒程度为 ${analysis.sleep.averageClarity}/5`,
+  ].filter((item): item is string => item !== null);
   const limitations = [
     `近 7 日记录完整度为 ${analysis.completeness}%`,
     analysis.boundary.sufficient ? "边界两组样本已达到最低描述性比较条件" : `边界配对样本仍不足（遵守 n=${analysis.boundary.followed.n}，违反 n=${analysis.boundary.violated.n}）`,
     "这些结果只能描述同时出现的模式，不能证明因果",
   ];
-  return { current, reasons: reasons.length ? reasons : ["暂无足够高频的饮食风险信号"], limitations };
+  return { current, reasons: reasons.length ? reasons : ["暂无足够的睡眠与边界记录"], limitations };
 }

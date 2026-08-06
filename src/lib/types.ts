@@ -7,6 +7,98 @@ export type CarbAmount = "low" | "moderate" | "high";
 export type OverallIntake = "low" | "moderate" | "high" | "excessive";
 export type SleepSource = "manual" | "apple_health";
 export type HealthValueSource = "manual" | "apple_health";
+export type MealSlot = "breakfast" | "lunch" | "dinner" | "snack";
+export type DietEntryStatus = "planned" | "consumed";
+export type DietTemplateKind = "combination" | "menu";
+export type DietSourceKind = "food" | DietTemplateKind | "meal_estimate";
+
+export type FoodPortion = {
+  label: string;
+  multiplier: number;
+};
+
+export type FoodItem = {
+  id: string;
+  user_id?: string;
+  name: string;
+  standard_amount: number;
+  standard_unit: string;
+  calories_kcal: number;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  fiber_g: number | null;
+  caffeine_mg: number | null;
+  tags: string[];
+  common_portions: FoodPortion[];
+  archived: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type DietTemplateItem = {
+  id?: string;
+  template_id: string;
+  food_id: string;
+  portion_multiplier: number;
+  food?: FoodItem;
+};
+
+export type DietTemplate = {
+  id: string;
+  user_id?: string;
+  kind: DietTemplateKind;
+  name: string;
+  tags: string[];
+  archived: boolean;
+  items: DietTemplateItem[];
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type DietEntry = {
+  id: string;
+  user_id?: string;
+  record_date: string;
+  meal_slot: MealSlot;
+  status: DietEntryStatus;
+  source_kind: DietSourceKind;
+  source_id: string | null;
+  group_id: string;
+  food_id: string | null;
+  name_snapshot: string;
+  standard_amount_snapshot: number;
+  standard_unit_snapshot: string;
+  portion_options_snapshot: FoodPortion[];
+  quantity: number;
+  calories_kcal_snapshot: number;
+  protein_g_snapshot: number | null;
+  carbs_g_snapshot: number | null;
+  fat_g_snapshot: number | null;
+  fiber_g_snapshot: number | null;
+  caffeine_mg_snapshot: number | null;
+  estimated: boolean;
+  note: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type NutritionTargets = {
+  user_id?: string;
+  calories_kcal: number | null;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  fiber_g: number | null;
+  caffeine_mg: number | null;
+  resting_metabolism_kcal: number;
+  calorie_deficit_kcal: number;
+  updated_at?: string;
+};
+
+export type DietNutrientKey = "calories_kcal" | "protein_g" | "carbs_g" | "fat_g" | "fiber_g" | "caffeine_mg";
+export type DietNutrientValues = Record<DietNutrientKey, number>;
+export type DietNutrientPartial = Record<DietNutrientKey, boolean>;
 
 export type DailyRecord = {
   id?: string;

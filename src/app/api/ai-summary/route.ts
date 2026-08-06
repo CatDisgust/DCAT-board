@@ -12,7 +12,6 @@ export async function POST() {
   const payload = {
     window: "recent_7_calendar_days",
     completeness: analysis.completeness,
-    diet: analysis.diet,
     sleep: analysis.sleep,
     boundary: analysis.boundary,
   };
@@ -26,7 +25,7 @@ export async function POST() {
       store: false,
       safety_identifier: safetyIdentifier,
       input: [
-        { role: "system", content: "你是个人状态数据分析器。只能使用给定结构化结果；不得补充事实、医疗诊断或把相关性写成因果。使用简洁中文。输出严格 JSON：current 字符串、reasons 字符串数组（最多3项）、limitations 字符串数组。" },
+        { role: "system", content: "你是个人状态数据分析器。只能总结给定的睡眠与认知边界结构化结果；不得评价饮食、补充事实、医疗诊断或把相关性写成因果。使用简洁中文。输出严格 JSON：current 字符串、reasons 字符串数组（最多3项）、limitations 字符串数组。" },
         { role: "user", content: JSON.stringify(payload) },
       ],
       text: { format: { type: "json_schema", name: "dashboard_summary", strict: true, schema: { type: "object", additionalProperties: false, properties: { current: { type: "string" }, reasons: { type: "array", items: { type: "string" }, maxItems: 3 }, limitations: { type: "array", items: { type: "string" } } }, required: ["current", "reasons", "limitations"] } } },

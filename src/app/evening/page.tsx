@@ -8,11 +8,11 @@ export const dynamic = "force-dynamic";
 
 export default async function EveningPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   const params = await searchParams;
-  const { demo, date, record } = await getRecordPageData(params.date);
+  const { demo, date, record, hasDetailedDiet, detailedMealCount } = await getRecordPageData(params.date);
   return (
     <AppShell demo={demo}>
       <PageHeader eyebrow="EVENING REVIEW" title="晚间回顾" description="用粗粒度事实结束今天。完成后系统不会弹出建议，也不会要求你继续分析。" actions={<DatePicker value={date} />} />
-      <EveningForm key={date} date={date} record={record} demo={demo} />
+      <EveningForm key={date} date={date} record={record} demo={demo} hasDetailedDiet={hasDetailedDiet} detailedMealCount={detailedMealCount} />
     </AppShell>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CalendarDays, Home, Leaf, MoonStar, Ruler, Settings, SunMedium } from "lucide-react";
+import { BarChart3, CalendarDays, Home, Leaf, MoonStar, Ruler, Settings, SunMedium, Utensils } from "lucide-react";
 import type { MouseEvent, ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,16 +12,17 @@ const nav = [
   { href: "/", label: "今日", icon: Home },
   { href: "/morning", label: "晨间", icon: SunMedium },
   { href: "/evening", label: "晚间", icon: MoonStar },
+  { href: "/diet", label: "饮食", icon: Utensils },
   { href: "/body", label: "身体", icon: Ruler },
   { href: "/history", label: "历史", icon: CalendarDays },
   { href: "/analysis", label: "分析", icon: BarChart3 },
 ];
 
-export function AppShell({ children, demo = false }: { children: ReactNode; demo?: boolean }) {
-  return <UnsavedChangesProvider><AppFrame demo={demo}>{children}</AppFrame></UnsavedChangesProvider>;
+export function AppShell({ children, demo = false, wide = false }: { children: ReactNode; demo?: boolean; wide?: boolean }) {
+  return <UnsavedChangesProvider><AppFrame demo={demo} wide={wide}>{children}</AppFrame></UnsavedChangesProvider>;
 }
 
-function AppFrame({ children, demo }: { children: ReactNode; demo: boolean }) {
+function AppFrame({ children, demo, wide }: { children: ReactNode; demo: boolean; wide: boolean }) {
   const pathname = usePathname();
   const { requestNavigation } = useUnsavedChanges();
   const guardNavigation = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -60,7 +61,7 @@ function AppFrame({ children, demo }: { children: ReactNode; demo: boolean }) {
           </Button>
         </div>
       </aside>
-      <main className="main-content">{children}</main>
+      <main className={`main-content${wide ? " main-content-wide" : ""}`}>{children}</main>
       <nav className="mobile-nav" aria-label="移动端导航">
         {nav.map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);

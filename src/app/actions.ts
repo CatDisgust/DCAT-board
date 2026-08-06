@@ -200,7 +200,23 @@ export async function saveEvening(formData: FormData) {
     throw new Error("手动修正活动能量时，需要填写有效数值");
   }
   if (violated && !reason) throw new Error("违反边界时需要选择主要原因");
-  const payload = {
+  const { data: detailedDiet, error: detailedDietError } = await auth.supabase
+    .from("diet_entries")
+    .select("meal_slot")
+    .eq("user_id", auth.user.id)
+    .eq("record_date", recordDate)
+    .eq("status", "consumed");
+  if (detailedDietError) throw new Error(detailedDietError.message);
+  const detailedMealCount = new Set((detailedDiet ?? []).map((entry) => entry.meal_slot)).size;
+  const hasDetailedDiet = detailedMealCount > 0;
+  const legacyDietPayload = hasDetailedDiet ? {} : {
+    high_fat_sugar_level: nullableString(formData, "high_fat_sugar_level"),
+    protein_level: nullableString(formData, "protein_level"),
+    vegetable_level: nullableString(formData, "vegetable_level"),
+    carbohydrate_amount: nullableString(formData, "carbohydrate_amount"),
+    overall_intake: nullableString(formData, "overall_intake"),
+  };
+  const payload: Record<string, unknown> = {
     user_id: auth.user.id,
     record_date: recordDate,
     evening_completed_at: new Date().toISOString(),
@@ -208,15 +224,11 @@ export async function saveEvening(formData: FormData) {
       active_energy_kcal: activeEnergy,
       active_energy_source: "manual",
     } : {}),
-    meal_count: nullableNumber(formData, "meal_count"),
+    meal_count: hasDetailedDiet ? detailedMealCount : nullableNumber(formData, "meal_count"),
     had_large_meal: nullableBoolean(formData, "had_large_meal"),
     overeating: nullableBoolean(formData, "overeating"),
     late_night_eating: nullableBoolean(formData, "late_night_eating"),
-    high_fat_sugar_level: nullableString(formData, "high_fat_sugar_level"),
-    protein_level: nullableString(formData, "protein_level"),
-    vegetable_level: nullableString(formData, "vegetable_level"),
-    carbohydrate_amount: nullableString(formData, "carbohydrate_amount"),
-    overall_intake: nullableString(formData, "overall_intake"),
+    ...legacyDietPayload,
     hunger_affected_sleep: nullableBoolean(formData, "hunger_affected_sleep"),
     boundary_violated: violated,
     boundary_violation_reason: violated ? reason : null,
@@ -239,7 +251,7 @@ export async function saveEvening(formData: FormData) {
     });
     if (refreshError) throw new Error(refreshError.message);
   }
-  revalidatePath("/"); revalidatePath("/analysis"); revalidatePath("/history");
+  revalidatePath("/"); revalidatePath("/analysis"); revalidatePath("/history"); revalidatePath("/diet");
   revalidatePath("/evening");
   revalidatePath(`/history/${recordDate}`);
   redirect("/?saved=evening");

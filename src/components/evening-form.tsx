@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { saveEvening } from "@/app/actions";
 import { Choice, ChoiceField, Segmented } from "@/components/choice-field";
 import { Card } from "@/components/ui/card";
@@ -13,7 +14,13 @@ import { FormSaveBar, TrackedForm } from "@/components/tracked-form";
 const yesNo = [["false", "没有"], ["true", "有"]] as const;
 const yesNoNeutral = [["false", "没有"], ["true", "有"]] as const;
 
-export function EveningForm({ date, record, demo }: { date: string; record: DailyRecord | null; demo: boolean }) {
+export function EveningForm({ date, record, demo, hasDetailedDiet, detailedMealCount }: {
+  date: string;
+  record: DailyRecord | null;
+  demo: boolean;
+  hasDetailedDiet: boolean;
+  detailedMealCount: number;
+}) {
   const [violated, setViolated] = useState(record?.boundary_violated === true);
   const [reason, setReason] = useState(record?.boundary_violation_reason ?? "");
   return (
@@ -21,24 +28,27 @@ export function EveningForm({ date, record, demo }: { date: string; record: Dail
       <input type="hidden" name="record_date" value={date} />
       {demo && <div className="notice">演示模式下提交不会写入数据库；配置 Supabase 后即可保存。</div>}
       <Card className="surface form-section gap-0 py-0">
-        <div className="form-section-title"><span>01</span><div><h2>活动与饮食轮廓</h2><p>只记录方向性信息，不追求精确热量</p></div></div>
+        <div className="form-section-title"><span>01</span><div><h2>活动与主观饮食感受</h2><p>{hasDetailedDiet ? "客观饮食数据已由饮食模块接管，这里只保留主观感受" : "尚无详细饮食记录，继续使用简化问卷"}</p></div></div>
         <HealthNumberField id="active_energy_kcal" name="active_energy_kcal" modeName="active_energy_entry_mode" label="活动能量" unit="kcal" value={record?.active_energy_kcal ?? null} source={record?.active_energy_source ?? null} min={0} max={5000} step={1} inputMode="numeric" placeholder="例如 560" />
-        <aside className="nutrition-guide" aria-label="饮食份量判断标准">
+        {hasDetailedDiet && <aside className="detailed-diet-notice"><Check />已从饮食模块读取 {detailedMealCount} 个已摄入餐段。热量、宏量营养素和餐数不再重复询问。</aside>}
+        {!hasDetailedDiet && <aside className="nutrition-guide" aria-label="饮食份量判断标准">
           <div className="nutrition-guide-title"><b>先用标准份量校准主观判断</b><span>19–50 岁成年人默认参考；活动量和个人目标不同可调整</span></div>
           <div><b>蛋白质类 · 2.5–3 份/日</b><span>1 份 ≈ 80g 熟禽肉、100g 熟鱼、2 个蛋或 170g 豆腐</span></div>
           <div><b>蔬菜 · 5–6 份/日</b><span>1 份 ≈ 75g、半杯熟蔬菜或一杯生菜</span></div>
           <div><b>谷物主食 · 约 6 份/日</b><span>1 份 ≈ 半杯熟米饭/面条或一片面包，优先全谷物</span></div>
-        </aside>
+        </aside>}
         <div className="compact-grid">
-          <ChoiceField label="今天吃了几餐？"><Segmented name="meal_count" defaultValue={record?.meal_count} options={[["1", "1 餐"], ["2", "2 餐"], ["3", "3 餐"], ["4", "4+ 餐"]]} /></ChoiceField>
+          {!hasDetailedDiet && <ChoiceField label="今天吃了几餐？"><Segmented name="meal_count" defaultValue={record?.meal_count} options={[["1", "1 餐"], ["2", "2 餐"], ["3", "3 餐"], ["4", "4+ 餐"]]} /></ChoiceField>}
           <ChoiceField label="有大餐吗？"><Segmented name="had_large_meal" defaultValue={record?.had_large_meal} options={yesNo} /></ChoiceField>
           <ChoiceField label="有明显过饱吗？"><Segmented name="overeating" defaultValue={record?.overeating} options={yesNo} /></ChoiceField>
           <ChoiceField label="有夜宵吗？"><Segmented name="late_night_eating" defaultValue={record?.late_night_eating} options={yesNo} /></ChoiceField>
-          <ChoiceField label="高油高糖程度"><Segmented name="high_fat_sugar_level" defaultValue={record?.high_fat_sugar_level} options={[["none", "几乎没有"], ["small", "少量"], ["significant", "明显"]]} /></ChoiceField>
-          <ChoiceField label="蛋白质" hint="按全天总量与上方参考目标比较"><Segmented name="protein_level" defaultValue={record?.protein_level} options={[["insufficient", "少于目标"], ["roughly_enough", "接近目标"], ["sufficient", "达到目标"]]} /></ChoiceField>
-          <ChoiceField label="蔬菜" hint="先估算标准份数，再作方向判断"><Segmented name="vegetable_level" defaultValue={record?.vegetable_level} options={[["insufficient", "少于目标"], ["roughly_enough", "接近目标"], ["sufficient", "达到目标"]]} /></ChoiceField>
-          <ChoiceField label="主食份量" hint="这里比较个人能量计划，不把越少视为越好"><Segmented name="carbohydrate_amount" defaultValue={record?.carbohydrate_amount} options={[["low", "低于计划"], ["moderate", "符合计划"], ["high", "高于计划"]]} /></ChoiceField>
-          <ChoiceField label="整体摄入感受"><Segmented name="overall_intake" defaultValue={record?.overall_intake} options={[["low", "偏少"], ["moderate", "适中"], ["high", "偏多"], ["excessive", "明显过多"]]} /></ChoiceField>
+          {!hasDetailedDiet && <>
+            <ChoiceField label="高油高糖程度"><Segmented name="high_fat_sugar_level" defaultValue={record?.high_fat_sugar_level} options={[["none", "几乎没有"], ["small", "少量"], ["significant", "明显"]]} /></ChoiceField>
+            <ChoiceField label="蛋白质" hint="按全天总量与上方参考目标比较"><Segmented name="protein_level" defaultValue={record?.protein_level} options={[["insufficient", "少于目标"], ["roughly_enough", "接近目标"], ["sufficient", "达到目标"]]} /></ChoiceField>
+            <ChoiceField label="蔬菜" hint="先估算标准份数，再作方向判断"><Segmented name="vegetable_level" defaultValue={record?.vegetable_level} options={[["insufficient", "少于目标"], ["roughly_enough", "接近目标"], ["sufficient", "达到目标"]]} /></ChoiceField>
+            <ChoiceField label="主食份量" hint="这里比较个人能量计划，不把越少视为越好"><Segmented name="carbohydrate_amount" defaultValue={record?.carbohydrate_amount} options={[["low", "低于计划"], ["moderate", "符合计划"], ["high", "高于计划"]]} /></ChoiceField>
+            <ChoiceField label="整体摄入感受"><Segmented name="overall_intake" defaultValue={record?.overall_intake} options={[["low", "偏少"], ["moderate", "适中"], ["high", "偏多"], ["excessive", "明显过多"]]} /></ChoiceField>
+          </>}
           <ChoiceField label="饥饿影响入睡？"><Segmented name="hunger_affected_sleep" defaultValue={record?.hunger_affected_sleep} options={yesNoNeutral} /></ChoiceField>
         </div>
       </Card>

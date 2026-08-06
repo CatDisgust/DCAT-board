@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Brain, Check, MoonStar, Percent, Scale } from "lucide-react";
+import { ArrowRight, Brain, Check, Flame, MoonStar, Percent, Scale } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { AppShell } from "@/components/app-shell";
@@ -8,7 +8,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { todayMetricComparison } from "@/lib/analytics";
 import { labels } from "@/lib/constants";
-import { getAppData } from "@/lib/data";
+import { getHomePageData } from "@/lib/data";
+import { calculateDailyCalorieTarget, summarizeDietEntries } from "@/lib/diet";
 import { formatCompactSleepDuration } from "@/lib/sleep";
 import { todayInTimeZone } from "@/lib/user-date";
 
@@ -22,7 +23,7 @@ function comparisonCopy(change: number | null, sample: number, unit: string) {
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ saved?: string; demo?: string }> }) {
   const params = await searchParams;
-  const { demo, profile, records } = await getAppData(28);
+  const { demo, profile, records, dietEntries, nutritionTargets } = await getHomePageData(28);
   const today = todayInTimeZone(profile.timezone);
   const todayRecord = records.find((record) => record.record_date === today);
   const sleep = todayMetricComparison(records, today, "sleep_duration_minutes");
@@ -31,6 +32,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   const morningDone = Boolean(todayRecord?.morning_completed_at);
   const clarity = todayRecord?.morning_clarity ? labels[todayRecord.morning_clarity] : null;
   const intensity = todayRecord?.task_intensity ? `${labels[todayRecord.task_intensity]}强度` : null;
+  const diet = summarizeDietEntries(dietEntries);
+  const consumedCalories = Math.round(diet.values.calories_kcal);
+  const calorieTarget = calculateDailyCalorieTarget(
+    nutritionTargets.resting_metabolism_kcal,
+    todayRecord?.active_energy_kcal ?? null,
+    nutritionTargets.calorie_deficit_kcal,
+  );
+  const calorieBalance = calorieTarget === null ? null : calorieTarget - consumedCalories;
+  const calorieCopy = !diet.hasEntries
+    ? "今天尚无已摄入记录"
+    : calorieTarget === null
+      ? "活动消耗尚未同步，暂不能计算动态目标"
+      : calorieBalance === 0
+        ? `已达到今日目标 ${calorieTarget} kcal`
+        : calorieBalance! > 0
+          ? `距今日目标还剩 ${calorieBalance} kcal`
+          : `超过今日目标 ${Math.abs(calorieBalance!)} kcal`;
 
   return (
     <AppShell demo={demo}>
@@ -48,6 +66,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           <strong>{sleep.current === null ? "—" : formatCompactSleepDuration(sleep.current)}</strong>
           <small>{sleep.current === null ? "今天尚无睡眠数据" : comparisonCopy(sleep.change, sleep.sample, " 分钟")}</small>
           <Link href="/morning">{sleep.current === null ? "记录或同步" : "查看晨间"}<ArrowRight /></Link>
+        </Card>
+        <Card className="surface today-metric-card gap-0 py-0">
+          <div className="today-metric-top"><span><Flame /></span><p>今日热量</p></div>
+          <strong>{diet.hasEntries ? `${consumedCalories} kcal` : "—"}</strong>
+          <small>{calorieCopy}</small>
+          <Link href={`/diet?date=${today}`}>{diet.hasEntries ? "查看或继续记录" : "开始记录饮食"}<ArrowRight /></Link>
         </Card>
         <Card className="surface today-metric-card gap-0 py-0">
           <div className="today-metric-top"><span><Scale /></span><p>体重</p></div>
