@@ -552,7 +552,7 @@ function NutritionPanel({ entries, targets, activeEnergyKcal, onEditTargets }: {
   const effectiveTargets = { ...targets, calories_kcal: dailyCalorieTarget };
   const calorieBudgetDetail = `${formatValue(targets.resting_metabolism_kcal)} 基础 + ${activeEnergyKcal === null ? "—" : formatValue(activeEnergyKcal)} 活动 − ${formatValue(targets.calorie_deficit_kcal)} 缺口`;
   return <Card className="diet-nutrition surface gap-0 py-0">
-    <div className="diet-panel-title"><div><Utensils /><span><b>当日营养</b><small>实际与计划分开</small></span></div><Button size="icon-sm" variant="ghost" onClick={onEditTargets} aria-label="编辑营养目标"><Pencil /></Button></div>
+    <div className="diet-panel-title"><div><Utensils /><span><b>当日营养</b><small>优先显示剩余可摄入，实际与计划分开</small></span></div><Button size="icon-sm" variant="ghost" onClick={onEditTargets} aria-label="编辑营养目标"><Pencil /></Button></div>
     <div className={`diet-nutrition-content ${hasPlannedEntries ? "has-projected" : ""}`}>
       <NutritionSet title="实际摄入" values={actual.values} partial={actual.partial} targets={effectiveTargets} calorieBudgetDetail={calorieBudgetDetail} />
       {hasPlannedEntries && <NutritionSet title="含计划预计" values={projected.values} partial={projected.partial} targets={effectiveTargets} compact calorieBudgetDetail={calorieBudgetDetail} />}
@@ -581,14 +581,23 @@ function NutritionSet({ title, values, partial, targets, compact = false, calori
     {coreNutrientKeys.map((key) => {
       const target = targets[key];
       const value = values[key];
-      const displayValue = partial[key] && value === 0 ? "—" : key === "calories_kcal" ? String(Math.round(value)) : formatValue(value);
+      const isCalories = key === "calories_kcal";
+      const remainingCalories = isCalories && target !== null ? Math.max(0, Math.round(target - value)) : null;
+      const displayValue = isCalories
+        ? remainingCalories === null ? "—" : String(remainingCalories)
+        : partial[key] && value === 0 ? "—" : formatValue(value);
       const ratio = target ? Math.min(value / target, 1) : 0;
-      return <div className={`diet-nutrient-card ${key === "calories_kcal" ? "primary" : ""}`} key={key}>
-        <div className="diet-nutrient-label"><b>{nutrientMeta[key].label}</b>{partial[key] && <em>部分未知</em>}</div>
+      const calorieStatus = target === null
+        ? "活动消耗未同步，暂不能计算"
+        : value > target
+          ? `目标 ${formatValue(target)} kcal · ${compact ? "预计" : "已"}超出 ${formatValue(value - target)} kcal`
+          : `目标 ${formatValue(target)} kcal · ${compact ? "预计摄入" : "已摄入"} ${formatValue(value)} kcal`;
+      return <div className={`diet-nutrient-card ${isCalories ? "primary" : ""}`} key={key}>
+        <div className="diet-nutrient-label"><b>{isCalories ? compact ? "预计剩余" : "剩余可摄入" : nutrientMeta[key].label}</b>{partial[key] && <em>部分未知</em>}</div>
         <div className="diet-nutrient-value"><strong>{displayValue}</strong><span>{nutrientMeta[key].unit}</span></div>
         <div className="diet-nutrient-progress" aria-hidden="true"><i style={{ width: `${ratio * 100}%` }} /></div>
-        <small>{target ? `目标 ${formatValue(target)} ${nutrientMeta[key].unit}` : "未设置目标"}</small>
-        {key === "calories_kcal" && <small className="diet-calorie-formula">{calorieBudgetDetail}</small>}
+        <small>{isCalories ? calorieStatus : target !== null ? `目标 ${formatValue(target)} ${nutrientMeta[key].unit}` : "未设置目标"}</small>
+        {isCalories && <small className="diet-calorie-formula">{calorieBudgetDetail}</small>}
       </div>;
     })}
   </div></section>;

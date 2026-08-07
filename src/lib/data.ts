@@ -308,25 +308,33 @@ export async function getBodyPageData(requestedDate?: string) {
   };
 }
 
-export async function getHistoryDetailData(date: string): Promise<{ demo: boolean; record: DailyRecord | null; measurement: BodyMeasurement | null }> {
+export async function getHistoryDetailData(date: string): Promise<{
+  demo: boolean;
+  record: DailyRecord | null;
+  measurement: BodyMeasurement | null;
+  dietEntries: DietEntry[];
+}> {
   if (!isSupabaseConfigured()) {
     return {
       demo: true,
       record: demoRecords.find((item) => item.record_date === date) ?? null,
       measurement: demoBodyMeasurements.find((item) => item.measurement_date === date) ?? null,
+      dietEntries: demoDietEntries.filter((entry) => entry.record_date === date),
     };
   }
   const { supabase, user } = await authenticatedClient();
-  const [recordResult, measurementResult] = await Promise.all([
+  const [recordResult, measurementResult, dietResult] = await Promise.all([
     supabase.from("daily_records").select("*").eq("user_id", user.id).eq("record_date", date).maybeSingle(),
     supabase.from("body_measurements").select("*").eq("user_id", user.id).eq("measurement_date", date).maybeSingle(),
+    supabase.from("diet_entries").select("*").eq("user_id", user.id).eq("record_date", date).order("created_at"),
   ]);
-  const error = recordResult.error ?? measurementResult.error;
+  const error = recordResult.error ?? measurementResult.error ?? dietResult.error;
   if (error) throw new Error(error.message);
   return {
     demo: false,
     record: recordResult.data as DailyRecord | null,
     measurement: measurementResult.data as BodyMeasurement | null,
+    dietEntries: (dietResult.data ?? []) as DietEntry[],
   };
 }
 

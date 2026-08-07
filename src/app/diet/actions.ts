@@ -138,8 +138,6 @@ export async function saveDietDayDraft(input: {
           status: entry.status,
           quantity,
           note,
-          created_at: undefined,
-          updated_at: undefined,
         };
       }
 
@@ -217,7 +215,7 @@ export async function saveDietDayDraft(input: {
     });
 
     if (rows.length > 0) {
-      const { error } = await auth.supabase.from("diet_entries").upsert(rows, { onConflict: "id" });
+      const { error } = await auth.supabase.from("diet_entries").upsert(rows, { onConflict: "id", defaultToNull: false });
       if (error) throw new Error(error.message);
     }
     if (deletedIds.length > 0) {

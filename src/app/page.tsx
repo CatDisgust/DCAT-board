@@ -40,15 +40,16 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     nutritionTargets.calorie_deficit_kcal,
   );
   const calorieBalance = calorieTarget === null ? null : calorieTarget - consumedCalories;
-  const calorieCopy = !diet.hasEntries
-    ? "今天尚无已摄入记录"
-    : calorieTarget === null
-      ? "活动消耗尚未同步，暂不能计算动态目标"
+  const remainingCalories = calorieBalance === null ? null : Math.max(0, calorieBalance);
+  const calorieCopy = calorieTarget === null
+    ? "活动消耗尚未同步，暂不能计算动态目标"
+    : !diet.hasEntries
+      ? `今日目标 ${calorieTarget} kcal · 尚未记录摄入`
       : calorieBalance === 0
-        ? `已达到今日目标 ${calorieTarget} kcal`
+        ? `已摄入 ${consumedCalories} kcal · 刚好达到目标`
         : calorieBalance! > 0
-          ? `距今日目标还剩 ${calorieBalance} kcal`
-          : `超过今日目标 ${Math.abs(calorieBalance!)} kcal`;
+          ? `今日目标 ${calorieTarget} kcal · 已摄入 ${consumedCalories} kcal`
+          : `已摄入 ${consumedCalories} kcal · 超出目标 ${Math.abs(calorieBalance!)} kcal`;
 
   return (
     <AppShell demo={demo}>
@@ -68,8 +69,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           <Link href="/morning">{sleep.current === null ? "记录或同步" : "查看晨间"}<ArrowRight /></Link>
         </Card>
         <Card className="surface today-metric-card gap-0 py-0">
-          <div className="today-metric-top"><span><Flame /></span><p>今日热量</p></div>
-          <strong>{diet.hasEntries ? `${consumedCalories} kcal` : "—"}</strong>
+          <div className="today-metric-top"><span><Flame /></span><p>剩余可摄入</p></div>
+          <strong>{remainingCalories === null ? "—" : `${remainingCalories} kcal`}</strong>
           <small>{calorieCopy}</small>
           <Link href={`/diet?date=${today}`}>{diet.hasEntries ? "查看或继续记录" : "开始记录饮食"}<ArrowRight /></Link>
         </Card>
@@ -85,9 +86,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           <small>{bodyFat.current === null ? "今天尚无体脂数据" : comparisonCopy(bodyFat.change, bodyFat.sample, " 个百分点")}</small>
           <Link href={`/body?date=${today}`}>{bodyFat.current === null ? "记录或同步" : "查看身体数据"}<ArrowRight /></Link>
         </Card>
-        <Card className="surface today-metric-card gap-0 py-0">
+        <Card className="surface today-metric-card today-status-card gap-0 py-0">
           <div className="today-metric-top"><span><Brain /></span><p>今日状态</p></div>
-          <strong>{clarity && intensity ? `${clarity} · ${intensity}` : clarity ?? intensity ?? "—"}</strong>
+          <strong>{clarity && intensity ? <><span>{clarity} ·</span><span>{intensity}</span></> : clarity ?? intensity ?? "—"}</strong>
           <small>{morningDone ? "来自今天的晨间记录，不生成综合评分" : "完成晨间记录后显示清醒程度与任务强度"}</small>
           <Link href={`/morning?date=${today}`}>{morningDone ? "查看或修改" : "开始晨间记录"}<ArrowRight /></Link>
         </Card>
